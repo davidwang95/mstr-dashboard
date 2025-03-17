@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Will MicroStrategy Tank Bitcoin?</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #F7F9FC;
+            --text-color: #1A2B47;
+            --positive-color: #28A745;
+            --negative-color: #DC3545;
+            --neutral-color: #E2E8F0;
+            --accent-color: #007BFF;
+            --gray-text: #888888;
+            --error-color: #DC3545;
+            --shadow: rgba(0,0,0,0.1);
+            --padding: 16px;
+            --border-radius: 8px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--padding);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            color: var(--gray-text);
+            margin-bottom: 20px;
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .social-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        
+        .social-link:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px var(--shadow);
+            padding: var(--padding);
+            margin-bottom: 20px;
+        }
+        
+        .main-assessment {
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .price-display {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        
+        .price-card {
+            text-align: center;
+            padding: 20px;
+            flex: 1;
+            min-width: 200px;
+            margin: 10px;
+        }
+        
+        .price-card h3 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .price-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .risk-button {
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        
+        .risk-button.elevated {
+            background-color: var(--negative-color);
+        }
+        
+        .risk-button.low {
+            background-color: var(--positive-color);
+        }
+        
+        .risk-button:hover {
+            transform: scale(1.05);
+        }
+        
+        .dashboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .dashboard-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--neutral-color);
+        }
+        
+        .data-label {
+            display: flex;
+            align-items: center;
+        }
+        
+        .data-value {
+            font-weight: bold;
+        }
+        
+        .tooltip-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            font-size: 12px;
+            margin-left: 5px;
+            cursor: help;
+            position: relative;
+        }
+        
+        .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-weight: normal;
+            font-size: 0.8rem;
+        }
+        
+        .tooltip-icon:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 20px;
+            background-color: var(--neutral-color);
+            border-radius: 10px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent-color);
+            transition: width 1s ease-in-out;
+        }
+        
+        .timeframe-toggles {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .timeframe-toggle {
+            background-color: var(--neutral-color);
+            border: none;
+            padding: 8px 12px;
+            margin: 0 5px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .timeframe-toggle.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        
+        .refresh-note {
+            text-align: center;
+            color: var(--gray-text);
+            font-size: 0.8rem;
+            margin-top: 30px;
+        }
+        
+        .loading {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--neutral-color);
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .error-message {
+            display: none;
+            text-align: center;
+            color: var(--error-color);
+            padding: 20px;
+            font-weight: bold;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .price-display {
+                flex-direction: column;
+            }
+            
+            .price-card {
+                margin-bottom: 15px;
+            }
+            
+            .dashboard {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .risk-button {
+                font-size: 1.2rem;
+                padding: 12px 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Will MicroStrategy Tank Bitcoin?</h1>
+            <div class="subtitle">Made for fun - Follow me on X and LinkedIn for crypto x equities research</div>
+            <div class="social-links">
+                <a href="https://x.com/DaveWangMIA/articles" target="_blank" class="social-link">X (Twitter)</a>
+                <a href="https://www.linkedin.com/in/davewangmia" target="_blank" class="social-link">LinkedIn</a>
+            </div>
+        </header>
+        
+        <div class="card main-assessment">
+            <h2>Main Assessment</h2>
+            <div class="loading" id="main-loading">
+                <div class="spinner"></div>
+            </div>
+            <div class="error-message" id="main-error">
+                Unable to fetch data—please refresh or try again later.
+            </div>
+            <div class="price-display">
+                <div class="price-card">
+                    <h3>Current BTC Price</h3>
+                    <div class="price-value" id="btc-price">--</div>
+                </div>
+                <div class="price-card">
+                    <h3>MSTR Average Cost per BTC</h3>
+                    <div class="price-value" id="mstr-avg-cost">--</div>
+                    <div class="tooltip-icon">?
+                        <span class="tooltip-text">The average price MicroStrategy paid for each Bitcoin in its treasury.</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="risk-elevated-container" style="display: none;">
+                <button class="risk-button elevated">Yes, Risk is Elevated</button>
+            </div>
+            <div id="risk-low-container" style="display: none;">
+                <button class="risk-button low">No, Risk is Low</button>
+            </div>
+        </div>
+        
+        <div class="dashboard">
+            <div class="dashboard-section">
+                <div class="card">
+                    <h2>Bitcoin Price & Holdings</h2>
+                    <div class="loading" id="holdings-loading">
+                        <div class="spinner"></div>
+                    </div>
+                    <div class="error-message" id="holdings-error">
+                        Unable to fetch data—please refresh or try again later.
+                    </div>
+                    <div class="data-row">
+                        <div class="data-label">
+                            MicroStrategy BTC Holdings
+                            <div class="tooltip-icon">?
+                                <span class="tooltip-text">The total number of Bitcoin currently owned by MicroStrategy.</span>
+                            </div>
+                        </div>
+                        <div class="data-value" id="mstr-btc-holdings">--</div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-label">
+                            Percentage of Total BTC Supply
+                            <div class="tooltip-icon">?
+                                <span class="tooltip-text">The percentage of the total Bitcoin supply (21 million) owned by MicroStrategy.</span>
+                            </div>
+                        </div>
+                        <div class="data-value" id="mstr-btc-percentage">--</div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="ownership-progress-bar" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-section">
+                <div class="card">
+                    <h2>MSTR Market Overview</h2>
+                    <div class="loading" id="market-loading">
+                        <div class="spinner"></div>
+                    </div>
+                    <div class="error-message" id="market-error">
+                        Unable to fetch data—please refresh or try again later.
+                    </div>
+                    <div class="data-row">
+                        <div class="data-label">
+                            Current MSTR Price
+                        </div>
+                        <div class="data-value" id="mstr-price">--</div>
+                    </div>
+                    
+                    <h3 style="margin-top: 20px; margin-bottom: 10px;">Analyst Recommendation Trends</h3>
+                    <div id="recommendation-chart-container" style="height: 320px; position: relative; margin-bottom: 20px; background-color: #252525; padding: 15px; border-radius: 8px;">
+                        <canvas id="recommendation-chart"></canvas>
+                    </div>
+                    <p style="text-align: center; font-style: italic; color: var(--gray-text); margin-bottom: 20px;">Source: Finnhub API Data</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="refresh-note">
+            Data auto-refreshes every 5 minutes
+        </div>
+        
+        <div class="subtitle" style="text-align: center; margin-top: 30px;">
+            Made for fun - Follow me on 
+            <a href="https://x.com/DaveWangMIA/articles" target="_blank" class="social-link">X</a> and 
+            <a href="https://www.linkedin.com/in/davewangmia" target="_blank" class="social-link">LinkedIn</a> 
+            for crypto x equities research
+        </div>
+    </div>
+
+    <script>
+        // MicroStrategy BTC holdings data
+        const MSTR_DATA = {
+            avgCostPerBTC: 66357, // Average cost per BTC in USD - Updated to $66,357
+            btcHoldings: 499096,  // Total BTC holdings - Updated to 499,096
+            sharesOutstanding: 14.16e6, // 14.16 million shares
+            dilutedShares: 17.8e6 // 17.8 million diluted shares
+        };
+        
+        const TOTAL_BTC_SUPPLY = 21e6; // 21 million total BTC supply
+        
+        // Finnhub API token
+        const FINNHUB_TOKEN = 'cvbo431r01qob7uetip0cvbo431r01qob7uetipg';
+        
+        // Current prices storage
+        let currentBTCPrice = 0;
+        let currentMSTRPrice = 0;
+        let mstrPreviousClose = 0; // Store previous close price for calculating change
+        
+        // DOM elements
+        const btcPriceElement = document.getElementById('btc-price');
+        const mstrAvgCostElement = document.getElementById('mstr-avg-cost');
+        const riskElevatedContainer = document.getElementById('risk-elevated-container');
+        const riskLowContainer = document.getElementById('risk-low-container');
+        const mstrBtcHoldingsElement = document.getElementById('mstr-btc-holdings');
+        const mstrBtcPercentageElement = document.getElementById('mstr-btc-percentage');
+        const ownershipProgressBar = document.getElementById('ownership-progress-bar');
+        const mstrPriceElement = document.getElementById('mstr-price');
+        
+        // Analyst recommendation elements
+        const strongBuyElement = document.getElementById('strong-buy-count');
+        const buyElement = document.getElementById('buy-count');
+        const holdElement = document.getElementById('hold-count');
+        const sellElement = document.getElementById('sell-count');
+        const strongSellElement = document.getElementById('strong-sell-count');
+        
+        // Loading and error elements
+        const mainLoading = document.getElementById('main-loading');
+        const mainError = document.getElementById('main-error');
+        const holdingsLoading = document.getElementById('holdings-loading');
+        const holdingsError = document.getElementById('holdings-error');
+        const marketLoading = document.getElementById('market-loading');
+        const marketError = document.getElementById('market-error');
+        
+        // Format number as currency
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            }).format(value);
+        }
+        
+        // Format number with commas
+        function formatNumber(value) {
+            return new Intl.NumberFormat('en-US').format(value);
+        }
+        
+        // Update BTC and MSTR data
+        async function updateData() {
+            showLoading();
+            
+            try {
+                // Use current prices from WebSocket or fetch if not available
+                let btcPrice = currentBTCPrice;
+                let mstrPrice = currentMSTRPrice;
+                
+                // If prices are not available from WebSocket yet, fetch them using REST API
+                if (btcPrice === 0) {
+                    btcPrice = await fetchBitcoinPrice();
+                }
+                
+                if (mstrPrice === 0) {
+                    mstrPrice = await fetchMSTRPrice();
+                }
+                
+                // Set BTC price and MSTR average cost
+                btcPriceElement.textContent = formatCurrency(btcPrice);
+                mstrAvgCostElement.textContent = formatCurrency(MSTR_DATA.avgCostPerBTC);
+                
+                // Update risk assessment
+                if (btcPrice < MSTR_DATA.avgCostPerBTC) {
+                    riskElevatedContainer.style.display = 'block';
+                    riskLowContainer.style.display = 'none';
+                } else {
+                    riskElevatedContainer.style.display = 'none';
+                    riskLowContainer.style.display = 'block';
+                }
+                
+                // Update BTC holdings info
+                mstrBtcHoldingsElement.textContent = formatNumber(MSTR_DATA.btcHoldings);
+                
+                const percentageOfSupply = (MSTR_DATA.btcHoldings / TOTAL_BTC_SUPPLY) * 100;
+                mstrBtcPercentageElement.textContent = percentageOfSupply.toFixed(2) + '%'; // Updated to display 2.38%
+                ownershipProgressBar.style.width = (percentageOfSupply * 4) + '%'; // Multiply for better visibility
+                
+                // Update MSTR market info with price, percent change, and dollar change
+                const priceChange = mstrPrice - mstrPreviousClose;
+                const percentChange = (priceChange / mstrPreviousClose) * 100;
+                
+                // Create color-coded change indicators
+                const changeColor = priceChange >= 0 ? 'var(--positive-color)' : 'var(--negative-color)';
+                const changeSign = priceChange >= 0 ? '+' : '';
+                
+                // Format the display text with current price and changes
+                mstrPriceElement.innerHTML = `${formatCurrency(mstrPrice)} <span style="color: ${changeColor};">(${changeSign}${formatCurrency(priceChange)} / ${changeSign}${percentChange.toFixed(2)}%)</span>`;
+                
+                hideLoading();
+                hideErrors();
+            } catch (error) {
+                console.error('Error updating data:', error);
+                showErrors();
+                hideLoading();
+            }
+        }
+        
+        // Show loading spinners
+        function showLoading() {
+            mainLoading.style.display = 'flex';
+            holdingsLoading.style.display = 'flex';
+            marketLoading.style.display = 'flex';
+        }
+        
+        // Hide loading spinners
+        function hideLoading() {
+            mainLoading.style.display = 'none';
+            holdingsLoading.style.display = 'none';
+            marketLoading.style.display = 'none';
+        }
+        
+        // Show error messages
+        function showErrors() {
+            mainError.style.display = 'block';
+            holdingsError.style.display = 'block';
+            marketError.style.display = 'block';
+        }
+        
+        // Hide error messages
+        function hideErrors() {
+            mainError.style.display = 'none';
+            holdingsError.style.display = 'none';
+            marketError.style.display = 'none';
+        }
+        
+        // Initialize page
+        function init() {
+            updateData();
+            setupWebSocket();
+            initRecommendationChart();
+            fetchAnalystRecommendations();
+            
+            // Set up auto-refresh
+            setInterval(updateData, 5 * 60 * 1000); // Refresh every 5 minutes
+            setInterval(fetchAnalystRecommendations, 60 * 60 * 1000); // Refresh recommendations every hour
+        }
+        
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+        
+        // Finnhub WebSocket API for real-time price updates
+        function setupWebSocket() {
+            const socket = new WebSocket(`wss://ws.finnhub.io?token=${FINNHUB_TOKEN}`);
+            
+            // Connection opened -> Subscribe
+            socket.addEventListener('open', function (event) {
+                socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'})); // Bitcoin price
+                socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'MSTR'})); // MicroStrategy stock price
+            });
+            
+            // Listen for messages
+            socket.addEventListener('message', function (event) {
+                const data = JSON.parse(event.data);
+                
+                // Update prices if trade data is received
+                if (data.type === 'trade') {
+                    data.data.forEach(trade => {
+                        if (trade.s === 'BINANCE:BTCUSDT') {
+                            currentBTCPrice = trade.p;
+                            btcPriceElement.textContent = formatCurrency(currentBTCPrice);
+                            
+                            // Update risk assessment in real-time
+                            if (currentBTCPrice < MSTR_DATA.avgCostPerBTC) {
+                                riskElevatedContainer.style.display = 'block';
+                                riskLowContainer.style.display = 'none';
+                            } else {
+                                riskElevatedContainer.style.display = 'none';
+                                riskLowContainer.style.display = 'block';
+                            }
+                        } else if (trade.s === 'MSTR') {
+                            currentMSTRPrice = trade.p;
+                            
+                            // Calculate and display price change
+                            const priceChange = currentMSTRPrice - mstrPreviousClose;
+                            const percentChange = (priceChange / mstrPreviousClose) * 100;
+                            
+                            // Create color-coded change indicators
+                            const changeColor = priceChange >= 0 ? 'var(--positive-color)' : 'var(--negative-color)';
+                            const changeSign = priceChange >= 0 ? '+' : '';
+                            
+                            // Format the display text with current price and changes
+                            mstrPriceElement.innerHTML = `${formatCurrency(currentMSTRPrice)} <span style="color: ${changeColor};">(${changeSign}${formatCurrency(priceChange)} / ${changeSign}${percentChange.toFixed(2)}%)</span>`;
+                        }
+                    });
+                }
+            });
+            
+            // Handle connection errors
+            socket.addEventListener('error', function (error) {
+                console.error('WebSocket error:', error);
+            });
+            
+            // Reconnect if connection is closed
+            socket.addEventListener('close', function () {
+                console.log('WebSocket connection closed. Reconnecting...');
+                setTimeout(setupWebSocket, 5000); // Try to reconnect after 5 seconds
+            });
+            
+            // Clean up WebSocket on page unload
+            window.addEventListener('beforeunload', function() {
+                if (socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({'type':'unsubscribe', 'symbol': 'BINANCE:BTCUSDT'}));
+                    socket.send(JSON.stringify({'type':'unsubscribe', 'symbol': 'MSTR'}));
+                    socket.close();
+                }
+            });
+        }
+        
+        // Finnhub REST API for fetching initial data
+        async function fetchBitcoinPrice() {
+            try {
+                const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=BINANCE:BTCUSDT&token=${FINNHUB_TOKEN}`);
+                const data = await response.json();
+                return data.c; // Current price
+            } catch (error) {
+                console.error('Error fetching Bitcoin price:', error);
+                return 52000; // Fallback to a default value
+            }
+        }
+        
+        async function fetchMSTRPrice() {
+            try {
+                const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=MSTR&token=${FINNHUB_TOKEN}`);
+                const data = await response.json();
+                mstrPreviousClose = data.pc || 1450; // Previous close price, fallback to 1450
+                return data.c; // Current price
+            } catch (error) {
+                console.error('Error fetching MSTR price:', error);
+                mstrPreviousClose = 1450; // Fallback previous close
+                return 1500; // Fallback current price
+            }
+        }
+        
+        // Recommendation chart
+        let recommendationChart;
+        
+        function initRecommendationChart() {
+            const chartCtx = document.getElementById('recommendation-chart').getContext('2d');
+            
+            recommendationChart = new Chart(chartCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Strong Buy', 'Buy', 'Hold', 'Sell', 'Strong Sell'],
+                    datasets: [{
+                        label: 'Analyst Recommendations',
+                        data: [0, 0, 0, 0, 0], // Default values
+                        backgroundColor: [
+                            '#28A745', // Strong Buy - Green
+                            '#5CB85C', // Buy - Light Green
+                            '#FFC107', // Hold - Yellow
+                            '#FF9800', // Sell - Orange
+                            '#DC3545'  // Strong Sell - Red
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        async function fetchAnalystRecommendations() {
+            try {
+                const response = await fetch(`https://finnhub.io/api/v1/stock/recommendation?symbol=MSTR&token=${FINNHUB_TOKEN}`);
+                const data = await response.json();
+                
+                // Use the most recent recommendation data (first item in the array)
+                if (data && data.length > 0) {
+                    const latestRec = data[0];
+                    
+                    // Update chart data
+                    recommendationChart.data.datasets[0].data = [
+                        latestRec.strongBuy || 0,
+                        latestRec.buy || 0,
+                        latestRec.hold || 0,
+                        latestRec.sell || 0,
+                        latestRec.strongSell || 0
+                    ];
+                    recommendationChart.update();
+                    
+                    // Update text elements
+                    strongBuyElement.textContent = latestRec.strongBuy || 0;
+                    buyElement.textContent = latestRec.buy || 0;
+                    holdElement.textContent = latestRec.hold || 0;
+                    sellElement.textContent = latestRec.sell || 0;
+                    strongSellElement.textContent = latestRec.strongSell || 0;
+                } else {
+                    // Use sample data if API call succeeds but returns no data
+                    setDefaultRecommendations();
+                }
+            } catch (error) {
+                console.error('Error fetching analyst recommendations:', error);
+                // Use sample data if API call fails
+                setDefaultRecommendations();
+            }
+        }
+        
+        function setDefaultRecommendations() {
+            // Sample data for demonstration
+            const sampleData = [3, 5, 4, 1, 0]; // Strong Buy, Buy, Hold, Sell, Strong Sell
+            
+            recommendationChart.data.datasets[0].data = sampleData;
+            recommendationChart.update();
+            
+            // Update text elements
+            strongBuyElement.textContent = sampleData[0];
+            buyElement.textContent = sampleData[1];
+            holdElement.textContent = sampleData[2];
+            sellElement.textContent = sampleData[3];
+            strongSellElement.textContent = sampleData[4];
+        }
+    </script>
+</body>
+</html>
